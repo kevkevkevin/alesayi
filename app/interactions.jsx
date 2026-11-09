@@ -6,6 +6,10 @@ import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { collectionMedia, email, phoneLink } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
+const desktopCollections = "(min-width: 831px) and (hover: hover)";
+const stripOffsets = [0, 0.2, 0.4, 0.6, 0.8];
+const backdropMedia = [{ image: "banner-16" }, ...collectionMedia.slice(1)];
+
 export function Navigation({ copy, locale }) {
   const dialog = useRef(null);
   const [open, setOpen] = useState(false);
@@ -38,12 +42,8 @@ export function Navigation({ copy, locale }) {
         </button>
         <a href={`${home}#top`} className="brand" aria-label={copy.company}>
           <span className="brand-mark" aria-hidden="true" />
-          <span>{copy.brand}</span>
         </a>
-        <div className="header-actions">
-          <a className="language" href={translatedHome} hrefLang={otherLanguage} lang={otherLanguage}>{copy.language}</a>
-          <a className="header-visit" href="#showrooms">{copy.visit}<Arrow /></a>
-        </div>
+        <a className="language header-language" href={translatedHome} hrefLang={otherLanguage} lang={otherLanguage}>{copy.language}</a>
       </header>
 
       <dialog id="site-menu" className="menu-dialog" ref={dialog} aria-label={copy.menu} onClose={() => setOpen(false)} onClick={(event) => {
@@ -81,8 +81,39 @@ export function CollectionPanels({ copy }) {
   const [hovered, setHovered] = useState(null);
   const [selected, setSelected] = useState(0);
   const dialog = useRef(null);
+  const backdrops = useRef(null);
+  const visibleBackdrop = useRef(0);
+  const wipe = useRef(null);
   const [name, , description] = copy.collections[selected];
   const current = collectionMedia[selected];
+
+  useEffect(() => () => wipe.current?.kill(), []);
+
+  function previewCollection(index) {
+    setHovered(index);
+    if (index === visibleBackdrop.current || !window.matchMedia(desktopCollections).matches) return;
+
+    wipe.current?.progress(1).kill();
+    const previous = backdrops.current.querySelector(`[data-backdrop="${visibleBackdrop.current}"]`);
+    const incoming = backdrops.current.querySelector(`[data-backdrop="${index}"]`);
+    const strips = backdrops.current.querySelectorAll(`#collection-wipe-${index} rect`);
+    visibleBackdrop.current = index;
+
+    gsap.set(previous, { zIndex: 0 });
+    gsap.set(incoming, { zIndex: 1, visibility: "visible" });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gsap.set(strips, { attr: { width: 0.201 } });
+      gsap.set(previous, { visibility: "hidden" });
+      return;
+    }
+    wipe.current = gsap.fromTo(strips, { attr: { width: 0 } }, {
+      attr: { width: 0.201 },
+      duration: 0.52,
+      stagger: 0.055,
+      ease: "power2.inOut",
+      onComplete: () => gsap.set(previous, { visibility: "hidden" }),
+    });
+  }
 
   function openCollection(index) {
     setSelected(index);
@@ -91,29 +122,46 @@ export function CollectionPanels({ copy }) {
 
   return (
     <>
-      <div className="collection-stage" data-interacting={hovered !== null} onPointerLeave={() => setHovered(null)}>
-        <div className="collection-backdrops" aria-hidden="true">
-          {collectionMedia.map(({ image, position }, index) => (
-            <TextileImage key={image} image={image} position={position} className={hovered === index ? "is-active" : ""} />
-          ))}
+      <div className="collection-stage">
+        <div className="collection-canvas">
+          <div className="collection-backdrops" aria-hidden="true" ref={backdrops}>
+            <svg className="collection-masks" width="0" height="0" aria-hidden="true">
+              <defs>
+                {backdropMedia.map(({ image }, index) => (
+                  <clipPath key={image} id={`collection-wipe-${index}`} clipPathUnits="objectBoundingBox">
+                    {stripOffsets.map((x) => <rect key={x} x={x} y="0" width="0.201" height="1" />)}
+                  </clipPath>
+                ))}
+              </defs>
+            </svg>
+            {backdropMedia.map(({ image, position }, index) => (
+              <div className="collection-backdrop" key={image} data-backdrop={index} style={{ clipPath: `url(#collection-wipe-${index})` }}>
+                <TextileImage image={image} position={position} />
+              </div>
+            ))}
+          </div>
+          <div className="collection-options" onPointerLeave={() => setHovered(null)}>
+            {copy.collections.map(([title, subtitle], index) => {
+              const { image, position } = collectionMedia[index];
+              return (
+                <button key={title} className="collection-card" type="button" aria-haspopup="dialog" aria-label={`${copy.view} — ${title}`} data-active={hovered === index} onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") previewCollection(index);
+                }} onFocus={() => previewCollection(index)} onBlur={() => setHovered(null)} onClick={() => openCollection(index)}>
+                  <TextileImage image={image} className="collection-image" position={position} />
+                  <span className="collection-info">
+                    <span className="collection-title">{title}</span>
+                    <span className="collection-tag eyebrow">{copy.collectionTag}</span>
+                    <span className="collection-plus" aria-hidden="true">+</span>
+                    <span className="collection-more">
+                      <span className="collection-description">{subtitle}</span>
+                      <span className="collection-cta">{copy.view}<Arrow /></span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        {copy.collections.map(([title, subtitle], index) => {
-          const { image, position } = collectionMedia[index];
-          return (
-            <button key={title} className="collection-card" type="button" aria-haspopup="dialog" aria-label={`${copy.view} — ${title}`} data-active={hovered === index} onPointerEnter={(event) => {
-              if (event.pointerType === "mouse") setHovered(index);
-            }} onFocus={() => setHovered(index)} onBlur={() => setHovered(null)} onClick={() => openCollection(index)}>
-              <TextileImage image={image} className="collection-image" position={position} />
-              <span className="collection-index eyebrow">0{index + 1} / 03</span>
-              <span className="collection-info">
-                <span className="collection-title">{title}</span>
-                <span className="eyebrow">{copy.collectionTag}</span>
-                <span className="collection-description">{subtitle}</span>
-                <span className="collection-cta"><span>{copy.view}</span><span className="circle"><Arrow /></span></span>
-              </span>
-            </button>
-          );
-        })}
       </div>
       <dialog className="collection-dialog" ref={dialog} aria-labelledby="collection-detail-title" onClick={(event) => {
         if (event.target === event.currentTarget) event.currentTarget.close();
@@ -172,6 +220,43 @@ export function Motion() {
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia();
+    media.add(`${desktopCollections} and (prefers-reduced-motion: no-preference)`, () => {
+      const stage = document.querySelector(".collection-stage");
+      const canvas = stage.querySelector(".collection-canvas");
+      const fabric = stage.querySelector(".collection-backdrops");
+      const options = stage.querySelector(".collection-options");
+      // Align the top of the centered preview with the space below the heading.
+      gsap.set(stage, { marginTop: "-35svh" });
+      const reveal = gsap.timeline({
+        scrollTrigger: {
+          trigger: stage,
+          start: "top top",
+          end: () => `+=${stage.offsetHeight * 0.9}`,
+          pin: true,
+          scrub: true,
+          anticipatePin: 1,
+        },
+      });
+      reveal
+        .fromTo(canvas, { clipPath: "inset(35% 38.75% 35% 38.75% round 6px)" }, {
+          clipPath: "inset(0% 0% 0% 0% round 0px)",
+          duration: 0.9,
+          ease: "power1.inOut",
+        })
+        .fromTo(fabric, { scale: 0.3 }, { scale: 1, duration: 0.9, ease: "power1.inOut" }, 0)
+        .fromTo(options, { opacity: 0, pointerEvents: "none" }, { opacity: 1, duration: 0.16 }, 0.84)
+        .set(options, { pointerEvents: "auto" }, 0.94);
+
+      function revealFocusedOption(event) {
+        if (event.target.matches(":focus-visible") && reveal.progress() < 1) {
+          window.scrollTo({ top: reveal.scrollTrigger.end, behavior: "instant" });
+          ScrollTrigger.update();
+        }
+      }
+      options.addEventListener("focusin", revealFocusedOption);
+      return () => options.removeEventListener("focusin", revealFocusedOption);
+    });
+
     media.add("(prefers-reduced-motion: no-preference)", () => {
       gsap.from(".hero-content h1 .title-line", {
         yPercent: 28, opacity: 0, duration: 1, stagger: 0.14, ease: "power3.out",
