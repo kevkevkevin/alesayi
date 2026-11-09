@@ -1,4 +1,4 @@
-import { CollectionPanels, Navigation, Showrooms, Motion } from "./interactions";
+import { CollectionPanels, HeroMedia, Navigation, Showrooms, Motion } from "./interactions";
 import { copy, email, getLocations, instagram, phoneLink, tiktok, whatsapp } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
@@ -16,18 +16,17 @@ export default function Home({ locale }) {
       <Navigation copy={c} locale={locale} />
       <main id="main">
         <section className="hero" aria-labelledby="hero-title">
-          <div className="hero-media" aria-hidden="true">
-            <TextileImage image="banner-16" className="hero-image" eager />
-          </div>
           <div className="hero-shade" />
           <div className="hero-content gutter">
             <p className="eyebrow hero-label">{c.heroLabel}</p>
             <h1 id="hero-title"><TitleLines lines={c.hero} /></h1>
+          </div>
+          <HeroMedia playLabel={c.playVideo} pauseLabel={c.pauseVideo}>
             <a href="#introduction" className="hero-scroll" aria-label={c.scroll}>
               <span className="circle"><Arrow direction="down" /></span>
               <span className="eyebrow">{c.scroll}</span>
             </a>
-          </div>
+          </HeroMedia>
         </section>
 
         <section id="introduction" className="statement gutter" aria-labelledby="intro-title">

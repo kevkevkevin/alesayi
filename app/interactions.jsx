@@ -10,6 +10,91 @@ const desktopCollections = "(min-width: 831px) and (hover: hover)";
 const stripOffsets = [0, 0.2, 0.4, 0.6, 0.8];
 const backdropMedia = [{ image: "banner-16" }, ...collectionMedia.slice(1)];
 
+export function HeroMedia({ children, playLabel, pauseLabel }) {
+  const video = useRef(null);
+  const userPaused = useRef(false);
+  const [hasFrame, setHasFrame] = useState(false);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const player = video.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let inView = false;
+
+    function syncPlayback() {
+      if (!inView || reducedMotion.matches || userPaused.current) {
+        player.pause();
+        return;
+      }
+      if (!player.hasAttribute("src")) player.src = "/media/hero.mp4";
+      player.play().catch(() => {});
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      syncPlayback();
+    });
+    observer.observe(player.closest(".hero"));
+    reducedMotion.addEventListener("change", syncPlayback);
+
+    return () => {
+      observer.disconnect();
+      reducedMotion.removeEventListener("change", syncPlayback);
+      player.pause();
+    };
+  }, []);
+
+  function togglePlayback() {
+    const player = video.current;
+    userPaused.current = !player.paused;
+    if (userPaused.current) {
+      player.pause();
+    } else {
+      player.play().catch(() => {});
+    }
+  }
+
+  return (
+    <>
+      <div className="hero-media" aria-hidden="true">
+        <TextileImage image="banner-16" className="hero-image" eager />
+        <video
+          ref={video}
+          className="hero-video"
+          data-ready={hasFrame}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onLoadedData={() => setHasFrame(true)}
+          onPlaying={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onError={() => {
+            setHasFrame(false);
+            setPlaying(false);
+          }}
+        />
+      </div>
+      <div className="hero-controls">
+        {children}
+        <button
+          className="circle hero-video-control"
+          type="button"
+          aria-label={playing ? pauseLabel : playLabel}
+          disabled={!hasFrame}
+          onClick={togglePlayback}
+        >
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            {playing
+              ? <path d="M7 5v10m6-10v10" fill="none" stroke="currentColor" strokeWidth="2" />
+              : <path d="m7 4 8 6-8 6z" fill="currentColor" />}
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+}
+
 export function Navigation({ copy, locale }) {
   const dialog = useRef(null);
   const [open, setOpen] = useState(false);
@@ -263,7 +348,7 @@ export function Motion() {
       });
       gsap.from(".hero-label, .hero-scroll", { opacity: 0, duration: 0.8, delay: 0.3 });
 
-      gsap.to(".hero-image", {
+      gsap.to(".hero-media", {
         scale: 1.16, yPercent: 8, ease: "none",
         scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
       });
