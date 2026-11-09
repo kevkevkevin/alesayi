@@ -1,4 +1,4 @@
-import { CollectionPanels, HeroMedia, Navigation, Showrooms, Motion } from "./interactions";
+import { CollectionPanels, FeatureVideo, HeroMedia, Navigation, Showrooms, Motion } from "./interactions";
 import { copy, email, getLocations, instagram, phoneLink, tiktok, whatsapp } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
@@ -64,9 +64,9 @@ export default function Home({ locale }) {
           </dl>
         </section>
 
-        <section className="feature" aria-labelledby="feature-title">
+        <section id="in-every-thread" className="feature" aria-labelledby="feature-title">
           <div className="feature-window">
-            <TextileImage image="banner-9" className="feature-image" />
+            <FeatureVideo />
             <div className="feature-shade" />
           </div>
           <div className="feature-content gutter">

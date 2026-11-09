@@ -10,23 +10,18 @@ const desktopCollections = "(min-width: 831px) and (hover: hover)";
 const stripOffsets = [0, 0.2, 0.4, 0.6, 0.8];
 const backdropMedia = [{ image: "banner-16" }, ...collectionMedia.slice(1)];
 
-export function HeroMedia({ children, playLabel, pauseLabel }) {
-  const video = useRef(null);
-  const userPaused = useRef(false);
-  const [hasFrame, setHasFrame] = useState(false);
-  const [playing, setPlaying] = useState(false);
-
+function useViewportPlayback(video, source, userPaused) {
   useEffect(() => {
     const player = video.current;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let inView = false;
 
     function syncPlayback() {
-      if (!inView || reducedMotion.matches || userPaused.current) {
+      if (!inView || reducedMotion.matches || userPaused?.current) {
         player.pause();
         return;
       }
-      if (!player.hasAttribute("src")) player.src = "/media/hero.mp4";
+      if (!player.hasAttribute("src")) player.src = source;
       player.play().catch(() => {});
     }
 
@@ -34,7 +29,7 @@ export function HeroMedia({ children, playLabel, pauseLabel }) {
       inView = entry.isIntersecting;
       syncPlayback();
     });
-    observer.observe(player.closest(".hero"));
+    observer.observe(player.closest("section"));
     reducedMotion.addEventListener("change", syncPlayback);
 
     return () => {
@@ -42,7 +37,16 @@ export function HeroMedia({ children, playLabel, pauseLabel }) {
       reducedMotion.removeEventListener("change", syncPlayback);
       player.pause();
     };
-  }, []);
+  }, [source, userPaused, video]);
+}
+
+export function HeroMedia({ children, playLabel, pauseLabel }) {
+  const video = useRef(null);
+  const userPaused = useRef(false);
+  const [hasFrame, setHasFrame] = useState(false);
+  const [playing, setPlaying] = useState(false);
+
+  useViewportPlayback(video, "/media/hero.mp4", userPaused);
 
   function togglePlayback() {
     const player = video.current;
@@ -60,7 +64,7 @@ export function HeroMedia({ children, playLabel, pauseLabel }) {
         <TextileImage image="banner-16" className="hero-image" eager />
         <video
           ref={video}
-          className="hero-video"
+          className="background-video"
           data-ready={hasFrame}
           muted
           loop
@@ -92,6 +96,30 @@ export function HeroMedia({ children, playLabel, pauseLabel }) {
         </button>
       </div>
     </>
+  );
+}
+
+export function FeatureVideo() {
+  const video = useRef(null);
+  const [hasFrame, setHasFrame] = useState(false);
+
+  useViewportPlayback(video, "/media/in-every-thread.mp4");
+
+  return (
+    <div className="feature-media" aria-hidden="true">
+      <TextileImage image="banner-9" />
+      <video
+        ref={video}
+        className="background-video"
+        data-ready={hasFrame}
+        muted
+        loop
+        playsInline
+        preload="auto"
+        onLoadedData={() => setHasFrame(true)}
+        onError={() => setHasFrame(false)}
+      />
+    </div>
   );
 }
 
@@ -362,7 +390,7 @@ export function Motion() {
         clipPath: "inset(0% 0% 0% 0%)", ease: "none",
         scrollTrigger: { trigger: ".feature", start: "top 85%", end: "top 12%", scrub: 0.5 },
       });
-      gsap.from(".feature-image", {
+      gsap.from(".feature-media", {
         scale: 1.18, ease: "none",
         scrollTrigger: { trigger: ".feature", start: "top bottom", end: "bottom top", scrub: true },
       });
@@ -381,7 +409,13 @@ export function Motion() {
         });
       });
     });
-    return () => media.revert();
+    // Let the initial anchor resolve after ScrollTrigger adds its pin spacing.
+    const anchor = document.getElementById(window.location.hash.slice(1));
+    const frame = anchor && requestAnimationFrame(() => anchor.scrollIntoView({ behavior: "instant" }));
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      media.revert();
+    };
   }, []);
 
   return null;
