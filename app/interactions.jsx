@@ -125,6 +125,8 @@ export function FeatureVideo() {
 
 export function Navigation({ copy, locale }) {
   const dialog = useRef(null);
+  const menuAnimation = useRef(null);
+  const destination = useRef(null);
   const [open, setOpen] = useState(false);
   const [condensed, setCondensed] = useState(false);
   const home = locale === "ar" ? "/ar/" : "/";
@@ -140,16 +142,67 @@ export function Navigation({ copy, locale }) {
     return () => {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
+      menuAnimation.current?.revert();
     };
   }, []);
+
+  function finishClose() {
+    const nextSection = destination.current;
+    destination.current = null;
+    dialog.current.close();
+    const animation = menuAnimation.current;
+    menuAnimation.current = null;
+    animation?.revert();
+    setOpen(false);
+
+    if (nextSection && window.location.hash === `#${nextSection}`) {
+      document.getElementById(nextSection)?.scrollIntoView();
+    } else if (nextSection) {
+      window.location.hash = nextSection;
+    }
+  }
+
+  function openMenu() {
+    const menu = dialog.current;
+    menu.showModal();
+    setOpen(true);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const animation = gsap.timeline({ onReverseComplete: finishClose });
+    menuAnimation.current = animation;
+    animation
+      .from(menu.querySelector(".menu-backdrop"), { opacity: 0, duration: 0.4 }, 0)
+      .from(menu.querySelector(".menu-sheet"), {
+        xPercent: locale === "ar" ? 105 : -105,
+        duration: 0.58,
+        ease: "power3.out",
+      }, 0)
+      .from(menu.querySelectorAll(".menu-close .menu-glyph i"), {
+        rotation: 0, opacity: 0, duration: 0.34, ease: "power2.out",
+      }, 0.12)
+      .from(menu.querySelectorAll(".menu-body > p, .menu-body nav a"), {
+        opacity: 0, y: 14, duration: 0.36, stagger: 0.07, ease: "power2.out",
+      }, 0.16)
+      .from(menu.querySelector(".menu-bottom"), {
+        opacity: 0, y: 10, duration: 0.34, ease: "power2.out",
+      }, 0.4);
+  }
+
+  function closeMenu(nextSection = null) {
+    const animation = menuAnimation.current;
+    if (animation?.reversed()) return;
+    destination.current = nextSection;
+    if (animation?.progress() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      animation.timeScale(1.8).reverse();
+    } else {
+      finishClose();
+    }
+  }
 
   return (
     <>
       <header className="header gutter" data-condensed={condensed}>
-        <button className="header-menu" type="button" aria-haspopup="dialog" aria-controls="site-menu" aria-expanded={open} onClick={() => {
-          dialog.current.showModal();
-          setOpen(true);
-        }}>
+        <button className="header-menu" type="button" aria-haspopup="dialog" aria-controls="site-menu" aria-expanded={open} onClick={openMenu}>
           <span className="menu-glyph" aria-hidden="true"><i /><i /></span>
           {copy.menu}
         </button>
@@ -159,31 +212,37 @@ export function Navigation({ copy, locale }) {
         <a className="language header-language" href={translatedHome} hrefLang={otherLanguage} lang={otherLanguage}>{copy.language}</a>
       </header>
 
-      <dialog id="site-menu" className="menu-dialog" ref={dialog} aria-label={copy.menu} onClose={() => setOpen(false)} onClick={(event) => {
-        if (event.target === event.currentTarget) event.currentTarget.close();
+      <dialog id="site-menu" className="menu-dialog" ref={dialog} aria-label={copy.menu} onCancel={(event) => {
+        event.preventDefault();
+        closeMenu();
+      }} onClick={(event) => {
+        if (event.target === event.currentTarget) closeMenu();
       }}>
+        <div className="menu-backdrop" aria-hidden="true" />
         <div className="menu-sheet">
+          <button className="menu-close" type="button" aria-label={copy.close} onClick={() => closeMenu()}>
+            <span className="menu-glyph" aria-hidden="true"><i /><i /></span>
+          </button>
           <div className="menu-body">
-            <div className="menu-top">
-              <p className="eyebrow section-mark"><span className="dot" />{copy.company}</p>
-              <button className="button close-button" type="button" onClick={() => dialog.current.close()}>
-                {copy.close}<span aria-hidden="true">×</span>
-              </button>
-            </div>
+            <p className="eyebrow">{copy.menu}</p>
             <nav aria-label={copy.menu}>
-              {copy.nav.map(([id, label], index) => (
-                <a href={`#${id}`} key={id} onClick={() => dialog.current.close()}>
-                  <span className="eyebrow">{String(index + 1).padStart(2, "0")}</span>
-                  {label}<Arrow />
-                </a>
+              {copy.nav.map(([id, label]) => (
+                <a href={`#${id}`} key={id} onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  event.preventDefault();
+                  closeMenu(id);
+                }}>{label}</a>
               ))}
             </nav>
-            <div className="menu-bottom">
+          </div>
+          <div className="menu-bottom">
+            <div className="menu-contact">
+              <p className="eyebrow">{copy.company}</p>
               <a href={`mailto:${email}`}>{email}</a>
               <a className="language" href={translatedHome} hrefLang={otherLanguage} lang={otherLanguage}>{copy.language}</a>
             </div>
+            <span className="menu-brand brand-mark" aria-hidden="true" />
           </div>
-          <div className="menu-picture" aria-hidden="true"><TextileImage image="banner-13" /></div>
         </div>
       </dialog>
     </>
