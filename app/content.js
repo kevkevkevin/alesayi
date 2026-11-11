@@ -60,6 +60,27 @@ export const collectionMedia = [
   { image: "banner-13", position: "center" },
 ];
 
+export const featuredProducts = [
+  {
+    image: "banner-8",
+    position: "center 52%",
+    en: ["Plum beaded mesh", "Sheer plum mesh with light-catching beads."],
+    ar: ["شبك برقوقي بالخرز", "قماش شبكي شفاف بلون برقوقي، تزيّنه حبات خرز لامعة."],
+  },
+  {
+    image: "banner-16",
+    position: "center 48%",
+    en: ["Bronze sheen", "Smooth folds with a warm bronze glow."],
+    ar: ["لمعة برونزية", "ثنيات ناعمة بلمعة برونزية دافئة."],
+  },
+  {
+    image: "banner-9",
+    position: "center",
+    en: ["Aubergine drape", "Deep purple with a fluid drape and a soft sheen."],
+    ar: ["انسياب بنفسجي داكن", "لون بنفسجي عميق بانسياب ولمعة ناعمة."],
+  },
+];
+
 export const copy = {
   en: {
     brand: "Alesayi",
@@ -81,6 +102,10 @@ export const copy = {
     collectionTitle: "Collections",
     collectionTag: "Fabric collection",
     view: "Explore collection",
+    featuredTitle: "Featured products",
+    productPreview: "Preview",
+    productInquiry: "Ask about this fabric",
+    productMessage: "Hello, I’d like to ask about this fabric:",
     collections: [
       ["Bridal", "Luminous textures and delicate details for the wedding day.", "Explore fabrics for wedding gowns, from softly draped finishes to fabrics with intricate surface details. Visit a showroom to compare shades and see how each fabric falls."],
       ["Evening", "Rich color, embroidery and beading for celebrations after dark.", "Discover expressive fabrics for evening and occasion wear. See how the color, embellishment and texture catch the light in person at an Alesayi showroom."],
@@ -131,6 +156,10 @@ export const copy = {
     collectionTitle: "المجموعات",
     collectionTag: "مجموعة الأقمشة",
     view: "استكشفي المجموعة",
+    featuredTitle: "منتجات مختارة",
+    productPreview: "معاينة",
+    productInquiry: "استفسري عن القماش",
+    productMessage: "مرحبًا، أود الاستفسار عن هذا القماش:",
     collections: [
       ["الأعراس", "أقمشة بتفاصيل ناعمة ولمسات مضيئة ليوم الزفاف.", "اكتشفي أقمشة فساتين الزفاف، من الأقمشة الناعمة والمنسدلة إلى الخامات ذات التفاصيل الدقيقة. زوري أحد معارضنا لمقارنة الدرجات ومشاهدة انسياب كل قماش."],
       ["السهرات", "ألوان غنيّة وتطريز وتفاصيل برّاقة لإطلالات السهرات.", "اكتشفي أقمشة مميّزة للسهرات والمناسبات، وشاهدي كيف تتفاعل الألوان والتفاصيل والملمس مع الضوء في أحد معارض العيسائي."],

@@ -1,4 +1,5 @@
 import { CollectionPanels, HeroMedia, Navigation, Showrooms, Motion, VideoBackdrop } from "./interactions";
+import { FeaturedProducts } from "./featured-products";
 import { copy, email, getLocations, instagram, phoneLink, tiktok, whatsapp } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
@@ -47,6 +48,8 @@ export default function Home({ locale }) {
           </div>
           <CollectionPanels copy={c} />
         </section>
+
+        <FeaturedProducts copy={c} locale={locale} />
 
         <section id="story" className="story gutter" aria-labelledby="story-title">
           <p className="eyebrow section-mark" data-reveal><span className="dot" />{c.storyLabel}</p>
