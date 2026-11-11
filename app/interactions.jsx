@@ -462,9 +462,11 @@ export function Motion() {
       });
 
       gsap.utils.toArray(".quality-image img").forEach((image) => {
-        gsap.fromTo(image, { scale: 1.15, yPercent: -4 }, {
-          scale: 1.15, yPercent: 4, ease: "none",
-          scrollTrigger: { trigger: image.parentElement, start: "top bottom", end: "bottom top", scrub: true },
+        const frame = image.parentElement;
+        const travel = frame.classList.contains("quality-image-small") ? -14 : 14;
+        gsap.fromTo(image, { scale: 1.34, yPercent: -travel }, {
+          scale: 1.34, yPercent: travel, ease: "none",
+          scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: true },
         });
       });
     });
