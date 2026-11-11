@@ -285,9 +285,8 @@ svg { width: 1em; height: 1em; flex: none; }
 .showroom-phones a { border-bottom: 1px solid currentColor; padding-block-end: .15rem; }
 .showroom-detail .button:hover { background: var(--cream); border-color: var(--cream); color: var(--ink); }
 
-.footer { position: relative; isolation: isolate; overflow: hidden; background: #281e17; color: var(--cream); padding-block-start: clamp(70px, 9vw, 160px); }
-.footer-media { opacity: .23; }
-.footer-media img { object-position: 50% 72%; }
+.footer { position: relative; isolation: isolate; overflow: hidden; background: #211723; color: var(--cream); padding-block-start: clamp(70px, 9vw, 160px); }
+.footer-media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #170e1a59, #170e1a8c 48%, #170e1acc); }
 .footer-hero { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.8rem; padding-block: 1.75rem clamp(58px, 7vw, 125px); }
 .footer h2 { font-size: var(--display); }
 .footer-actions { display: flex; gap: .6rem; flex-wrap: wrap; }

@@ -29,7 +29,7 @@ function useViewportPlayback(video, source, userPaused) {
       inView = entry.isIntersecting;
       syncPlayback();
     });
-    observer.observe(player.closest("section"));
+    observer.observe(player.closest("section, footer"));
     reducedMotion.addEventListener("change", syncPlayback);
 
     return () => {
@@ -99,15 +99,15 @@ export function HeroMedia({ children, playLabel, pauseLabel }) {
   );
 }
 
-export function FeatureVideo() {
+export function VideoBackdrop({ className, source, image }) {
   const video = useRef(null);
   const [hasFrame, setHasFrame] = useState(false);
 
-  useViewportPlayback(video, "/media/in-every-thread.mp4");
+  useViewportPlayback(video, source);
 
   return (
-    <div className="feature-media" aria-hidden="true">
-      <TextileImage image="banner-9" />
+    <div className={className} aria-hidden="true">
+      <TextileImage image={image} />
       <video
         ref={video}
         className="background-video"

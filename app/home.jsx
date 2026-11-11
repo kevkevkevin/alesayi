@@ -1,4 +1,4 @@
-import { CollectionPanels, FeatureVideo, HeroMedia, Navigation, Showrooms, Motion } from "./interactions";
+import { CollectionPanels, HeroMedia, Navigation, Showrooms, Motion, VideoBackdrop } from "./interactions";
 import { copy, email, getLocations, instagram, phoneLink, tiktok, whatsapp } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
@@ -66,7 +66,7 @@ export default function Home({ locale }) {
 
         <section id="in-every-thread" className="feature" aria-labelledby="feature-title">
           <div className="feature-window">
-            <FeatureVideo />
+            <VideoBackdrop className="feature-media" source="/media/in-every-thread.mp4" image="banner-9" />
             <div className="feature-shade" />
           </div>
           <div className="feature-content gutter">
@@ -101,7 +101,7 @@ export default function Home({ locale }) {
       </main>
 
       <footer id="contact" className="footer gutter">
-        <div className="footer-media" aria-hidden="true"><TextileImage image="banner-16" /></div>
+        <VideoBackdrop className="footer-media" source="/media/footer.mp4" image="banner-9" />
         <div className="footer-content">
           <p className="eyebrow section-mark" data-reveal><span className="dot" />{c.contactLabel}</p>
           <div className="footer-hero" data-reveal>
