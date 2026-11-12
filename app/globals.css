@@ -43,6 +43,7 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 svg { width: 1em; height: 1em; flex: none; }
 ::selection { background: #604730; color: var(--cream); }
 :focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
+[data-reveal]:focus-within { opacity: 1 !important; }
 
 .gutter { padding-inline: var(--gutter); }
 .sr-only {

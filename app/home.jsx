@@ -53,13 +53,13 @@ export default function Home({ locale }) {
 
         <section id="story" className="story gutter" aria-labelledby="story-title">
           <p className="eyebrow section-mark" data-reveal><span className="dot" />{c.storyLabel}</p>
-          <div className="story-intro" data-reveal>
-            <h2 id="story-title">{c.storyTitle}</h2>
-            <p>{c.storyBody}</p>
+          <div className="story-intro">
+            <h2 id="story-title" data-reveal>{c.storyTitle}</h2>
+            <p data-reveal>{c.storyBody}</p>
           </div>
-          <dl className="story-facts" data-reveal>
+          <dl className="story-facts">
             {c.facts.map(([number, label]) => (
-              <div className="story-fact" key={label}>
+              <div className="story-fact" key={label} data-reveal>
                 <dt className="eyebrow">{label}</dt>
                 <dd>{number}</dd>
               </div>
@@ -75,7 +75,7 @@ export default function Home({ locale }) {
           <div className="feature-content gutter">
             <p className="eyebrow section-mark" data-reveal><span className="dot" />{c.featureLabel}</p>
             <h2 id="feature-title" data-reveal><TitleLines lines={c.featureTitle} /></h2>
-            <a className="text-link" href="#showrooms">{c.featureLink}<Arrow /></a>
+            <a className="text-link" href="#showrooms" data-reveal>{c.featureLink}<Arrow /></a>
           </div>
         </section>
 
@@ -85,10 +85,10 @@ export default function Home({ locale }) {
             <h2 id="quality-title">{c.qualityTitle}</h2>
             <p>{c.qualityBody}</p>
           </div>
-          <figure className="quality-image quality-image-tall">
+          <figure className="quality-image quality-image-tall" data-reveal>
             <TextileImage image="banner-8" position="center 53%" />
           </figure>
-          <figure className="quality-image quality-image-small">
+          <figure className="quality-image quality-image-small" data-reveal>
             <TextileImage image="banner-6" />
           </figure>
         </section>
@@ -115,17 +115,17 @@ export default function Home({ locale }) {
             </div>
           </div>
           <div className="footer-details">
-            <div>
+            <div data-reveal>
               <p className="eyebrow">{c.company}</p>
               <a href={`mailto:${email}`}>{email}</a>
               <a dir="ltr" href={phoneLink("0126433364")}>+966 12 643 3364</a>
             </div>
-            <div>
+            <div data-reveal>
               <p className="eyebrow">{c.hq}</p>
               <p>{c.hqAddress}</p>
               <p>{c.hqPost}</p>
             </div>
-            <div>
+            <div data-reveal>
               <p className="eyebrow">{c.social}</p>
               <a href={instagram}>Instagram</a>
               <a href={tiktok}>TikTok</a>

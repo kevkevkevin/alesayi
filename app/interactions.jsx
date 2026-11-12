@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import Lenis from "lenis";
 import { collectionMedia, email, phoneLink } from "./content";
 import { Arrow, TextileImage } from "./ui";
 
@@ -212,7 +213,7 @@ export function Navigation({ copy, locale }) {
         <a className="language header-language" href={translatedHome} hrefLang={otherLanguage} lang={otherLanguage}>{copy.language}</a>
       </header>
 
-      <dialog id="site-menu" className="menu-dialog" ref={dialog} aria-label={copy.menu} onCancel={(event) => {
+      <dialog id="site-menu" className="menu-dialog" ref={dialog} aria-label={copy.menu} data-lenis-prevent onCancel={(event) => {
         event.preventDefault();
         closeMenu();
       }} onClick={(event) => {
@@ -335,7 +336,7 @@ export function CollectionPanels({ copy }) {
           </div>
         </div>
       </div>
-      <dialog className="collection-dialog" ref={dialog} aria-labelledby="collection-detail-title" onClick={(event) => {
+      <dialog className="collection-dialog" ref={dialog} aria-labelledby="collection-detail-title" data-lenis-prevent onClick={(event) => {
         if (event.target === event.currentTarget) event.currentTarget.close();
       }}>
         <div className="collection-sheet">
@@ -429,7 +430,17 @@ export function Motion() {
       return () => options.removeEventListener("focusin", revealFocusedOption);
     });
 
-    media.add("(prefers-reduced-motion: no-preference)", () => {
+    media.add("(prefers-reduced-motion: no-preference)", (context) => {
+      const lenis = new Lenis({
+        lerp: 0.12,
+        anchors: true,
+        autoToggle: true,
+        stopInertiaOnNavigate: true,
+      });
+      const advanceScroll = (time) => lenis.raf(time * 1000);
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(advanceScroll);
+
       gsap.from(".hero-content h1 .title-line", {
         yPercent: 28, opacity: 0, duration: 1, stagger: 0.14, ease: "power3.out",
       });
@@ -437,12 +448,12 @@ export function Motion() {
 
       gsap.to(".hero-media", {
         scale: 1.16, yPercent: 8, ease: "none",
-        scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true },
+        scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.3 },
       });
 
       gsap.from(".statement-word", {
         color: "#777066", stagger: 0.07, ease: "none",
-        scrollTrigger: { trigger: ".statement", start: "top 78%", end: "center 45%", scrub: true },
+        scrollTrigger: { trigger: ".statement", start: "top 78%", end: "center 45%", scrub: 0.35 },
       });
 
       gsap.fromTo(".feature-window", { clipPath: "inset(8% 14% 8% 14%)" }, {
@@ -451,24 +462,42 @@ export function Motion() {
       });
       gsap.from(".feature-media", {
         scale: 1.18, ease: "none",
-        scrollTrigger: { trigger: ".feature", start: "top bottom", end: "bottom top", scrub: true },
+        scrollTrigger: { trigger: ".feature", start: "top bottom", end: "bottom top", scrub: 0.4 },
       });
 
-      gsap.utils.toArray("[data-reveal]").forEach((element) => {
-        gsap.from(element, {
-          y: 30, opacity: 0, duration: 0.85, ease: "power3.out",
-          scrollTrigger: { trigger: element, start: "top 91%", once: true },
+      const revealElements = gsap.utils.toArray("[data-reveal]");
+      gsap.set(revealElements, { y: 24, opacity: 0 });
+      const entrances = new IntersectionObserver((entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting).map((entry) => entry.target);
+        if (!visible.length) return;
+        visible.forEach((element) => entrances.unobserve(element));
+        context.add(() => {
+          gsap.to(visible, {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.075,
+            ease: "power3.out",
+            clearProps: "opacity,transform",
+          });
         });
-      });
+      }, { threshold: 0.12 });
+      revealElements.forEach((element) => entrances.observe(element));
 
       gsap.utils.toArray(".quality-image img").forEach((image) => {
         const frame = image.parentElement;
         const travel = frame.classList.contains("quality-image-small") ? -14 : 14;
         gsap.fromTo(image, { scale: 1.34, yPercent: -travel }, {
           scale: 1.34, yPercent: travel, ease: "none",
-          scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: true },
+          scrollTrigger: { trigger: frame, start: "top bottom", end: "bottom top", scrub: 0.4 },
         });
       });
+
+      return () => {
+        entrances.disconnect();
+        gsap.ticker.remove(advanceScroll);
+        lenis.destroy();
+      };
     });
     // Let the initial anchor resolve after ScrollTrigger adds its pin spacing.
     const anchor = document.getElementById(window.location.hash.slice(1));
